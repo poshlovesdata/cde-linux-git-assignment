@@ -1,0 +1,6 @@
+*.csv
+raw/
+*.log
+gold/
+raw/
+transformed/
