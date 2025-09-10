@@ -30,12 +30,12 @@ cde_linux_git_assignment/
 
 **Features:**
 
-* **Extract:** Downloads CSV data from New Zealand Statistics website using environment variables
-* **Transform:** Renames `Variable_code` to `variable_code` and selects specific columns (`year`, `Value`, `Units`, `variable_code`)
-* **Load:** Saves final dataset to `gold` directory
-* **Error Handling:** Implements `set -euo pipefail` for robust error management
-* **Dependencies:** Automatically installs Miller tool for CSV processing
-* **Verification:** Confirms successful completion of each phase
+- **Extract:** Downloads CSV data from New Zealand Statistics website using environment variables
+- **Transform:** Renames `Variable_code` to `variable_code` and selects specific columns (`year`, `Value`, `Units`, `variable_code`)
+- **Load:** Saves final dataset to `gold` directory
+- **Error Handling:** Implements `set -euo pipefail` for robust error management
+- **Dependencies:** Automatically installs Miller tool for CSV processing
+- **Verification:** Confirms successful completion of each phase
 
 **Usage:**
 
@@ -68,8 +68,8 @@ Add this line:
 
 **Cron Expression Breakdown:**
 
-* `0 0 * * *`: Minute=0, Hour=0, Day=any, Month=any, Weekday=any
-* Logs output to `/var/log/etl_job.log` for monitoring
+- `0 0 * * *`: Minute=0, Hour=0, Day=any, Month=any, Weekday=any
+- Logs output to `/var/log/etl_job.log` for monitoring
 
 ---
 
@@ -79,11 +79,11 @@ Add this line:
 
 **Features:**
 
-* Accepts command-line arguments for source and destination directories
-* Creates destination directory if it doesn't exist
-* Handles cases where no files are found
-* Provides feedback on number of files moved
-* Supports both CSV and JSON file types
+- Accepts command-line arguments for source and destination directories
+- Creates destination directory if it doesn't exist
+- Handles cases where no files are found
+- Provides feedback on number of files moved
+- Supports both CSV and JSON file types
 
 **Usage:**
 
@@ -111,11 +111,11 @@ Add this line:
 
 **Features:**
 
-* Creates `posey` database if it doesn't exist
-* Defines proper schemas for each table (`accounts`, `orders`, `region`, `sales_reps`, `web_events`)
-* Implements DROP and CREATE table logic for clean reloads
-* Uses PostgreSQL `COPY` command for efficient data loading
-* Handles multiple CSV files automatically
+- Creates `posey` database if it doesn't exist
+- Defines proper schemas for each table (`accounts`, `orders`, `region`, `sales_reps`, `web_events`)
+- Implements DROP and CREATE table logic for clean reloads
+- Uses PostgreSQL `COPY` command for efficient data loading
+- Handles multiple CSV files automatically
 
 **Prerequisites:**
 
@@ -138,10 +138,40 @@ sudo -u postgres createuser --superuser $USER
 
 **Query Solutions:**
 
-* **High Volume Orders:** Identifies orders with `gloss_qty` or `poster_qty > 4000`
-* **Special Order Patterns:** Finds orders with zero `standard_qty` but high gloss/poster quantities
-* **Customer Segmentation:** Locates companies starting with 'C' or 'W' with specific contact patterns
-* **Sales Territory Analysis:** Provides comprehensive view of regions, sales reps, and their accounts
+- **High Volume Orders:** Identifies orders with `gloss_qty` or `poster_qty > 4000`
+
+```sql
+SELECT id
+FROM orders
+WHERE gloss_qty > 4000 OR poster_qty > 4000;
+```
+
+- **Special Order Patterns:** Finds orders with zero `standard_qty` but high gloss/poster quantities
+
+```sql
+SELECT *
+FROM orders
+WHERE standard_qty = 0 AND (gloss_qty > 1000 OR poster_qty > 1000);
+```
+
+- **Customer Segmentation:** Locates companies starting with 'C' or 'W' with specific contact patterns
+
+```sql
+SELECT company_name
+FROM companies
+WHERE (company_name LIKE 'C%' OR company_name LIKE 'W%')
+  AND (primary_contact ILIKE '%ana%' AND primary_contact NOT ILIKE '%eana%');
+```
+
+- **Sales Territory Analysis:** Provides comprehensive view of regions, sales reps, and their accounts
+
+```sql
+SELECT regions.region_name, sales_reps.name AS sales_rep_name, accounts.name AS account_name
+FROM regions
+JOIN sales_reps ON regions.id = sales_reps.region_id
+JOIN accounts ON sales_reps.id = accounts.sales_rep_id
+ORDER BY account_name;
+```
 
 **Execute Queries:**
 
@@ -153,7 +183,7 @@ psql -U postgres -d posey -f scripts/sql/posey.sql
 
 ## ETL Pipeline Architecture
 
-
+![Alt text](/pipeline-architecture.png)
 
 ---
 
@@ -161,11 +191,11 @@ psql -U postgres -d posey -f scripts/sql/posey.sql
 
 **Dependencies**
 
-* Linux Operating System (Ubuntu/Debian preferred)
-* Bash 4.0+
-* PostgreSQL 12+
-* curl
-* Miller (mlr) - for CSV processing
+- Linux Operating System (Ubuntu/Debian preferred)
+- Bash 4.0+
+- PostgreSQL 12+
+- curl
+- Miller (mlr) - for CSV processing
 
 **Installation Commands:**
 
@@ -183,19 +213,19 @@ sudo apt install postgresql postgresql-contrib -y
 
 All scripts implement:
 
-* `set -euo pipefail` for strict error handling
-* File existence validation
-* Process confirmation messages
-* Exit codes for automation integration
+- `set -euo pipefail` for strict error handling
+- File existence validation
+- Process confirmation messages
+- Exit codes for automation integration
 
 ---
 
 ## Security Considerations
 
-* Uses environment variables for sensitive URLs
-* Implements proper file permissions
-* Follows principle of least privilege
-* Validates input directories before operations
+- Uses environment variables for sensitive URLs
+- Implements proper file permissions
+- Follows principle of least privilege
+- Validates input directories before operations
 
 ---
 
